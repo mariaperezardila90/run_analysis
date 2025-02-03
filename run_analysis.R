@@ -4,7 +4,7 @@ unzip("UCI_HAR_Dataset.zip", exdir = "UCI_HAR_Dataset")
 list.files("UCI_HAR_Dataset") # Step 4: Verify that the files have been extracted
 features <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/features.txt", stringsAsFactors = FALSE)
 head(features) 
- 
+
 
 features <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/features.txt", stringsAsFactors = FALSE) # Load features and activity labels
 activity_labels <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/activity_labels.txt", stringsAsFactors = FALSE)
@@ -83,7 +83,4 @@ head(tidy_data_loaded)
 write.table(tidy_data, "tidy_data.txt", row.names = FALSE)
 list.files() 
 
-usethis::use_git()
-usethis::create_github_token()
-gitcreds::gitcreds_set()
-usethis::use_github()
+ 
