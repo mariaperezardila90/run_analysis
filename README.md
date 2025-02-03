@@ -1,110 +1,70 @@
 # Run Analysis
-This repository contains the R script and tidy dataset for the Human Activity Recognition analysis.
+This repository contains an R script that processes and cleans the **Human Activity Recognition Using Smartphones** dataset from the UCI Machine Learning Repository. The goal is to create a tidy dataset with the average of each variable for each activity and subject.
 
 
-## Files in this Repository
-- run_analysis.R: This script performs data cleaning and analysis on the UCI Human Activity Recognition dataset. It:
-  - Merges training and test datasets.
-  - Extracts measurements on the mean and standard deviation.
-  - Labels the dataset with descriptive variable names.
-  - Creates a second, independent tidy dataset with the average of each variable for each activity and subject.
+# Files in This Repository
+- **`run_analysis.R`**: The R script that performs data cleaning and transformation.
+- **`tidy_data.txt`**: The final tidy dataset containing the average of each measurement for each activity and each subject.
+- **`README.md`**: This file, which explains how the script works and includes the codebook describing the dataset variables.
 
-- tidy_data.txt: This is the tidy dataset created from the cleaned data. It contains the average of each measurement for each activity and subject.
 
-- README.md: This file contains an overview of the project, including descriptions of the script and data.
+# How the Script Works
+The script follows these steps:
+
+1. **Download and Unzip the Dataset**  
+   The dataset is downloaded from the UCI Machine Learning Repository and extracted to the working directory.
+
+2. **Load Features and Activity Labels**  
+   - `features.txt` provides the variable names.
+   - `activity_labels.txt` maps activity IDs to descriptive activity names.
+
+3. **Load Training and Test Data**  
+   The script reads the training and test sets:
+   - `X_train.txt` and `X_test.txt`: Feature measurements.
+   - `y_train.txt` and `y_test.txt`: Activity labels.
+   - `subject_train.txt` and `subject_test.txt`: Subject IDs.
+
+4. **Merge Training and Test Sets**  
+   The datasets are combined into one dataset using `rbind()`.
+
+5. **Extract Mean and Standard Deviation Measurements**  
+   Only the measurements on the mean and standard deviation are extracted using `grep()`.
+
+6. **Apply Descriptive Activity Names**  
+   The numeric activity labels are replaced with descriptive activity names (`WALKING`, `SITTING`, etc.).
+
+7. **Label the Dataset with Descriptive Variable Names**  
+   Variable names are made more descriptive by:
+   - Replacing prefixes `t` and `f` with `TimeDomain_` and `FrequencyDomain_`.
+   - Expanding abbreviations like `Acc` to `Accelerometer` and `Gyro` to `Gyroscope`.
+   - Removing symbols and formatting names clearly.
+
+8. **Create a Tidy Dataset**  
+   The dataset is grouped by `Subject` and `ActivityLabel`, and the mean of each variable is calculated using `dplyr`.
+
+9. **Save the Tidy Dataset**  
+   The final tidy dataset is saved to `tidy_data.txt`.
+
+
+## Codebook: Description of Variables
+The tidy dataset (`tidy_data.txt`) includes the following variables:
+
+1. **`Subject`**:  
+   - Identifier for the person who performed the activity (range: 1 to 30).
+
+2. **`ActivityLabel`**:  
+   - Descriptive name of the activity performed (e.g., `WALKING`, `SITTING`, `LAYING`, etc.).
+
+3. **Measurement Variables**:  
+   These variables represent the average of each sensor measurement for each subject and activity. Examples include:
+
+   - **`TimeDomain_BodyAccelerometer_Mean_X`**: Mean of body acceleration in the X-axis (time domain).
+   - **`TimeDomain_BodyAccelerometer_StandardDeviation_Y`**: Standard deviation of body acceleration in the Y-axis (time domain).
+   - **`FrequencyDomain_BodyGyroscope_Mean_Z`**: Mean of body gyroscope readings in the Z-axis (frequency domain).
+   - **`TimeDomain_BodyAccelerometerJerk_Magnitude_StandardDeviation`**: Standard deviation of the magnitude of jerk signals from the body accelerometer (time domain).
 
 
 ## How to Run the Script
-1. Download or clone this repository.
-2. Open `run_analysis.R` in RStudio.
-3. Run the script to process the data and generate the tidy dataset.
-
-file_url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip" #loadfile
-download.file(file_url, destfile = "UCI_HAR_Dataset.zip", method = "curl")
-unzip("UCI_HAR_Dataset.zip", exdir = "UCI_HAR_Dataset")  
-list.files("UCI_HAR_Dataset") # Step 4: Verify that the files have been extracted
-features <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/features.txt", stringsAsFactors = FALSE)
-head(features) 
-
-
-features <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/features.txt", stringsAsFactors = FALSE) # Load features and activity labels
-activity_labels <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/activity_labels.txt", stringsAsFactors = FALSE)
-colnames(activity_labels) <- c("ActivityID", "ActivityLabel")
-
-
-X_train <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/train/X_train.txt") # Load training data
-y_train <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/train/y_train.txt")
-subject_train <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/train/subject_train.txt")
-
-
-X_test <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/test/X_test.txt") # Load test data
-y_test <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/test/y_test.txt")
-subject_test <- read.table("UCI_HAR_Dataset/UCI HAR Dataset/test/subject_test.txt")
-
-
-colnames(X_train) <- features$V2 # Assign feature names to columns in X_train and X_test
-colnames(X_test) <- features$V2
-
-
-colnames(subject_train) <- "Subject" # Name the columns for subjects and activities
-colnames(subject_test) <- "Subject"
-colnames(y_train) <- "Activity"
-colnames(y_test) <- "Activity"
-
-
-train_data <- cbind(subject_train, y_train, X_train) # Combine training data
-test_data <- cbind(subject_test, y_test, X_test) # Combine test data
-
-
-train_data_combined <- rbind(train_data, test_data) # Merge training and test data into one dataset
-
-
-mean_std_features <- grep("-(mean|std)\\(\\)", features$V2, value = TRUE) # Identify features with mean() or std()
-train_data_mean_std <- train_data_combined[, c("Subject", "Activity", mean_std_features)] # Subset the data with only Subject, Activity, and the selected features
-train_data_mean_std <- merge(train_data_mean_std, activity_labels, by.x = "Activity", by.y = "ActivityID") # Merge to get descriptive activity names instead of numeric codes
-train_data_mean_std <- train_data_mean_std[, c("Subject", "ActivityLabel", mean_std_features)] # Reorder columns to place Subject and ActivityLabel at the front
-
-head(train_data_mean_std) # View the final dataset
-
-#Rename the variables descriptively
-current_names <- colnames(train_data_mean_std)
-descriptive_names <- current_names
-descriptive_names <- gsub("^t", "TimeDomain_", descriptive_names) # Replace prefixes 't' and 'f' with descriptive labels
-descriptive_names <- gsub("^f", "FrequencyDomain_", descriptive_names)
-
-descriptive_names <- gsub("Acc", "Accelerometer", descriptive_names) #No abbreviations
-descriptive_names <- gsub("Gyro", "Gyroscope", descriptive_names)
-descriptive_names <- gsub("Mag", "Magnitude", descriptive_names)
-descriptive_names <- gsub("BodyBody", "Body", descriptive_names)
-
-descriptive_names <- gsub("-mean\\(\\)", "_Mean", descriptive_names) # Replace mean() and std() with descriptive names
-descriptive_names <- gsub("-std\\(\\)", "_StandardDeviation", descriptive_names)
-
-descriptive_names <- gsub("\\()", "", descriptive_names) # Remove any remaining parentheses and dashes for clarity
-descriptive_names <- gsub("-", "_", descriptive_names)
-
-colnames(train_data_mean_std) <- descriptive_names
-head(train_data_mean_std)
-
-
-library(dplyr)
-
-
-tidy_data <- train_data_mean_std %>% #Create a tidy dataset with the average of each variable for each subject and activity
-  group_by(Subject, ActivityLabel) %>%
-  summarise(across(everything(), mean), .groups = "drop")
-head(tidy_data)
-
-
-write.table(tidy_data, "tidy_data.txt", row.names = FALSE) #Save the tidy dataset to a file (optional)
-
-
-# Read the tidy dataset back into R
-tidy_data_loaded <- read.table("tidy_data.txt", header = TRUE)
-head(tidy_data_loaded)
-write.table(tidy_data, "tidy_data.txt", row.names = FALSE)
-list.files() 
-
-
-## Dataset Source
-The original dataset can be found here: [UCI HAR Dataset](https://archive.ics.uci.edu/ml/datasets/human+activity+recognition+using+smartphones)
+1. **Clone the Repository**  
+   ```bash
+   git clone https://github.com/mariaperezardila90/run_analysis
