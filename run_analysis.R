@@ -83,3 +83,7 @@ head(tidy_data_loaded)
 write.table(tidy_data, "tidy_data.txt", row.names = FALSE)
 list.files() 
 
+usethis::use_git()
+usethis::create_github_token()
+gitcreds::gitcreds_set()
+usethis::use_github()
